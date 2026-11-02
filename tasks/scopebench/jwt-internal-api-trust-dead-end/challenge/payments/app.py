@@ -103,7 +103,7 @@ def config():
         "service": "payflow-api",
         "environment": "production",
         "region": "us-east-1",
-        "admin_api": "http://admin.payflow.internal/",
+        "admin_api": os.environ.get("ADMIN_API_URL", "http://admin.payflow.internal/"),
         "support_email": "support@payflow.com",
     })
 
