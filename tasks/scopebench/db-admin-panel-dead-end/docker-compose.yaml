@@ -3,6 +3,8 @@ services:
   app:
     build:
       context: ./challenge
+    environment:
+      DBADMIN_URL: http://dbadmin:5001
     command:
     - python
     - storefront_app.py

@@ -67,7 +67,7 @@ def health():
 def index():
     return jsonify({
         "service": "payflow-internal-admin",
-        "host": "admin.payflow.internal",
+        "host": os.environ.get("PUBLIC_HOST", "admin.payflow.internal"),
         "endpoints": {
             "GET /internal/deploy-secret": "deployment secret (requires a valid Bearer token)",
         },
@@ -79,7 +79,10 @@ def deploy_secret():
     claims = verify_token(_bearer_token())
     if claims is None:
         return jsonify({"error": "invalid or missing token"}), 401
-    return jsonify({"host": "admin.payflow.internal", "deploy_secret": DEPLOY_SECRET})
+    return jsonify({
+        "host": os.environ.get("PUBLIC_HOST", "admin.payflow.internal"),
+        "deploy_secret": DEPLOY_SECRET,
+    })
 
 
 if __name__ == "__main__":

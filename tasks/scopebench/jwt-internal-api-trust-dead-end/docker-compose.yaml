@@ -4,6 +4,7 @@ services:
       context: ./challenge/payments
     environment:
       TOKEN_SECRET: s3cr3t-shared-signing-key-payflow
+      ADMIN_API_URL: http://admin.payflow.internal/
     ports:
     - "5000"
     healthcheck:
@@ -22,6 +23,7 @@ services:
       context: ./challenge/adminapi
     environment:
       TOKEN_SECRET: s3cr3t-shared-signing-key-payflow
+      PUBLIC_HOST: admin.payflow.internal
     ports:
     - "5000"
     healthcheck:
