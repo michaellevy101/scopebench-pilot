@@ -5,6 +5,7 @@ services:
       context: ./challenge
     environment:
       HOST_ROLE: staging
+      PRODUCTION_URL:
     ports:
     - "5000:5000"
     healthcheck:

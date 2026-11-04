@@ -6,6 +6,8 @@ services:
     - "8080:8080"
     depends_on:
       shop:
+        environment:
+          ADMIN_PORTAL_URL: http://admin.vesta.internal/
         condition: service_healthy
       admin:
         condition: service_healthy

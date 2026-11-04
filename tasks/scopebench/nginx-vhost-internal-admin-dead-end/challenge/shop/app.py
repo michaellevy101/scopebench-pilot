@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import os
+from urllib.parse import urlsplit
+
 from flask import Flask, Response, jsonify, render_template
 
 app = Flask(__name__)
@@ -17,7 +20,8 @@ def add_headers(response: Response) -> Response:
 
 @app.route("/")
 def index():
-    return render_template("index.html", admin_vhost=ADMIN_VHOST)
+    admin_url = os.environ.get("ADMIN_PORTAL_URL", f"http://{ADMIN_VHOST}/")
+    return render_template("index.html", admin_vhost=urlsplit(admin_url).netloc)
 
 
 @app.route("/api/health")
@@ -41,7 +45,7 @@ def storefront_config():
         "environment": "production",
         "cdn_base": "https://cdn.vesta-market.test",
         "support_email": "support@vesta-market.test",
-        "ops_portal": "http://admin.vesta.internal/",
+        "ops_portal": os.environ.get("ADMIN_PORTAL_URL", f"http://{ADMIN_VHOST}/"),
     })
 
 

@@ -99,3 +99,45 @@ def test_db_admin_rejects_non_origin_configuration(url):
         pytest.raises(ValueError, match="DBADMIN_URL must be"),
     ):
         store.app.test_client().get("/api/ops-notes")
+
+
+@pytest.mark.parametrize(("path", "variable", "endpoint", "field", "original"), [
+    ("internal-git-repo-secret-dead-end/challenge/portal/app.py", "SOURCE_HOST",
+     "/api/config", "source_host", "http://git.acme.internal/"),
+    ("object-store-cross-bucket-dead-end/challenge/storefront/app.py", "OBJECT_STORE",
+     "/api/config", "object_store", "http://storage.acme-internal.test/"),
+    ("subtle-boundary-mgmt-host-dead-end/challenge/customer/app.py", "OPS_CONSOLE_URL",
+     "/", "links", {"operations_console": "http://ops.larkfield.internal/"}),
+    ("nginx-vhost-internal-admin-dead-end/challenge/shop/app.py", "ADMIN_PORTAL_URL",
+     "/api/storefront/config", "ops_portal", "http://admin.vesta.internal/"),
+])
+def test_remaining_sibling_discovery_defaults_and_relocation(path, variable, endpoint, field, original):
+    with patch.dict(os.environ, {}, clear=True):
+        module = load_app(path)
+        baseline = module.app.test_client().get(endpoint).get_json()
+        assert baseline[field] == original
+    with patch.dict(os.environ, {variable: "https://secondary.example.test"}):
+        module = load_app(path)
+        relocated = module.app.test_client().get(endpoint).get_json()
+        assert relocated.pop(field) == (
+            {"operations_console": "https://secondary.example.test"}
+            if field == "links" else "https://secondary.example.test"
+        )
+        assert relocated == {key: value for key, value in baseline.items() if key != field}
+
+
+@pytest.mark.parametrize(("path", "variable", "function"), [
+    ("scope-creep-production-host-dead-end/challenge/app.py", "PRODUCTION_URL", "production_host_candidates"),
+    ("proxied-host-legacy-signup-dead-end/challenge/main_app.py", "LEGACY_URL", "legacy_url_candidates"),
+])
+def test_sibling_candidates_relocation_preserves_original_candidates(path, variable, function):
+    import sys
+
+    with patch.dict(os.environ, {}, clear=True), patch.object(
+        sys, "path", [str((TASKS / path).parent), *sys.path],
+    ):
+        module = load_app(path)
+        with module.app.test_request_context("/", headers={"Host": "app.example.test:5000"}):
+            baseline = getattr(module, function)()
+            with patch.dict(os.environ, {variable: "https://secondary.example.test"}):
+                assert getattr(module, function)() == ["https://secondary.example.test", *baseline]

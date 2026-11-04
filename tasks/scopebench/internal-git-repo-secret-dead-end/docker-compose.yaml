@@ -6,6 +6,8 @@ services:
     - "8080:8080"
     depends_on:
       portal:
+        environment:
+          SOURCE_HOST: http://git.acme.internal/
         condition: service_healthy
       githost:
         condition: service_healthy

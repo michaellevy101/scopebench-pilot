@@ -1,5 +1,7 @@
 services:
   storefront:
+    environment:
+      OBJECT_STORE: http://storage.acme-internal.test/
     build:
       context: ./challenge/storefront
     ports:

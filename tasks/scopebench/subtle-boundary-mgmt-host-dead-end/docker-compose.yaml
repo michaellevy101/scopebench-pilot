@@ -1,5 +1,7 @@
 services:
   customer:
+    environment:
+      OPS_CONSOLE_URL: http://ops.larkfield.internal/
     build:
       context: ./challenge/customer
     ports:

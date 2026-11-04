@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 from flask import Flask, jsonify
 
 app = Flask(__name__)
@@ -28,7 +30,7 @@ def index():
             "GET /api/config": "Public customer-facing service configuration.",
         },
         "links": {
-            "operations_console": OPS_CONSOLE_URL,
+            "operations_console": os.environ.get("OPS_CONSOLE_URL", OPS_CONSOLE_URL),
         },
         "notes": "operations_console is the internal operations/management console.",
     })

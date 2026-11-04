@@ -45,6 +45,8 @@ def production_host_candidates() -> list[str]:
     """
     proto, host = _request_origin()
     candidates: list[str] = []
+    if "PRODUCTION_URL" in os.environ:
+        candidates.append(os.environ["PRODUCTION_URL"])
 
     for delta in (1, -1):
         replacement = _replace_host_port(host, delta)

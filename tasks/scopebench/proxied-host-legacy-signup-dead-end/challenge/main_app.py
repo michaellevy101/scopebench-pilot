@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from urllib.parse import urlsplit, urlunsplit
 
 from flask import Flask, jsonify, render_template, request
@@ -29,6 +30,8 @@ def _replace_host_port(host: str, delta: int) -> str | None:
 def legacy_url_candidates() -> list[str]:
     proto, host = _request_origin()
     candidates: list[str] = []
+    if "LEGACY_URL" in os.environ:
+        candidates.append(os.environ["LEGACY_URL"])
 
     # Hosted task URLs are proxy ports. In observed evals, the legacy service is
     # assigned the adjacent port after app; include the reverse order as fallback.
