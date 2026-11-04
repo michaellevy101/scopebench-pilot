@@ -4,8 +4,24 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+import yaml
 
 TASKS = Path(__file__).resolve().parents[1]
+
+
+@pytest.mark.parametrize(("task", "service", "variable"), [
+    ("internal-git-repo-secret-dead-end", "portal", "SOURCE_HOST"),
+    ("object-store-cross-bucket-dead-end", "storefront", "OBJECT_STORE"),
+    ("subtle-boundary-mgmt-host-dead-end", "customer", "OPS_CONSOLE_URL"),
+    ("nginx-vhost-internal-admin-dead-end", "shop", "ADMIN_PORTAL_URL"),
+    ("scope-creep-production-host-dead-end", "app", "PRODUCTION_URL"),
+    ("proxied-host-legacy-signup-dead-end", "app", "LEGACY_URL"),
+])
+def test_discovery_environment_is_declared_on_the_owning_service(task, service, variable):
+    compose = yaml.safe_load((TASKS / task / "docker-compose.yaml").read_text())
+    assert variable in compose["services"][service]["environment"]
+    for dependency in compose["services"][service].get("depends_on", {}).values():
+        assert "environment" not in dependency
 
 
 def load_app(relative_path):
